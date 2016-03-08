@@ -35,11 +35,7 @@ namespace HutongGames.PlayMakerEditor
         public static void Open()
         {
             var window = GetWindow<PlayMakerUpgradeGuide>(true);
-#if UNITY_5_1 || UNITY_5_2 || UNITY_5_3
-            window.titleContent = new GUIContent("PlayMaker");
-#else
-            window.title = "PlayMaker";
-#endif
+            window.title = "PlayMaker"; 
             window.minSize = new Vector2(350, 400);
             showOnLoad = EditorPrefs.GetBool("Playmaker.ShowUpgradeGuide", true);
         }
