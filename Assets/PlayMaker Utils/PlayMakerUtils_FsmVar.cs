@@ -76,6 +76,14 @@ public partial class PlayMakerUtils {
 		case VariableType.GameObject:
 			fsmVar.GetValueFrom( (NamedVariable)fromFsm.Variables.GetFsmGameObject(fsmVar.variableName));
 			break;
+		#if PLAYMAKER_1_8
+		case VariableType.Enum:
+			fsmVar.GetValueFrom( (NamedVariable)fromFsm.Variables.GetFsmEnum(fsmVar.variableName));
+			break;
+		case VariableType.Array:
+			fsmVar.GetValueFrom( (NamedVariable)fromFsm.Variables.GetFsmArray(fsmVar.variableName));
+			break;
+		#endif
 		}
 	}
 	
@@ -121,8 +129,13 @@ public partial class PlayMakerUtils {
 				return fromFsm.Variables.GetFsmGameObject(_name).Value;
 			case VariableType.Object:
 				return fromFsm.Variables.GetFsmObject(_name).Value;
+			#if PLAYMAKER_1_8
+			case VariableType.Enum:
+				return fromFsm.Variables.GetFsmEnum(_name).Value;
+			case VariableType.Array:
+				return fromFsm.Variables.GetFsmArray(_name).Values;
+			#endif
 			}
-			
 		}else{
 			
 			switch (fsmVar.Type){
@@ -152,14 +165,53 @@ public partial class PlayMakerUtils {
 				return fsmVar.gameObjectValue;
 			case VariableType.Object:
 				return fsmVar.objectReference;
+			#if PLAYMAKER_1_8
+			case VariableType.Enum:
+				return fsmVar.EnumValue;
+			case VariableType.Array:
+				return fsmVar.arrayValue;
+			#endif
 			}
 		}
-		
-		
+
 		return null;
 	}
-	
-	
+	#if PLAYMAKER_1_8
+	public static bool ApplyValueToFsmVar(Fsm fromFsm,FsmVar fsmVar, object[] value)
+	{
+		if (fromFsm==null)
+		{
+			return false;
+		}
+		if (fsmVar==null)
+		{
+			return false;
+		}
+		FsmArray _target;
+
+		if (value==null || value.Length == 0)
+		{
+			if(fsmVar.Type == VariableType.Array ){
+				_target= fromFsm.Variables.GetFsmArray(fsmVar.variableName);
+				_target.Reset();
+			}
+			return true;
+		}
+
+		if (fsmVar.Type != VariableType.Array)
+		{
+			Debug.LogError("The fsmVar value <"+fsmVar.Type+"> doesn't match the value <FsmArray> on state"+fromFsm.ActiveStateName+" on fsm:"+fromFsm.Name+" on GameObject:"+fromFsm.GameObjectName);
+			return false;
+		}
+
+		_target= fromFsm.Variables.GetFsmArray(fsmVar.variableName);
+		_target.Values = value;
+
+		return true;
+	}
+	#endif
+
+
 	public static bool ApplyValueToFsmVar(Fsm fromFsm,FsmVar fsmVar, object value)
 	{
 		if (fromFsm==null)
@@ -227,7 +279,15 @@ public partial class PlayMakerUtils {
 				_target.Value = Vector3.zero;
 				
 			}
-			
+			#if PLAYMAKER_1_8
+			else if(fsmVar.Type == VariableType.Enum ){
+				FsmEnum _target= fromFsm.Variables.GetFsmEnum(fsmVar.variableName);
+				_target.ResetValue();
+			}else if(fsmVar.Type == VariableType.Array ){
+				FsmArray _target= fromFsm.Variables.GetFsmArray(fsmVar.variableName);
+				_target.Reset();
+			}
+			#endif
 			return true;
 		}
 		
@@ -280,6 +340,14 @@ public partial class PlayMakerUtils {
 		case VariableType.Material:
 			storageType = typeof(Material);
 			break;
+		#if PLAYMAKER_1_8
+		case VariableType.Enum:
+			storageType = typeof(System.Enum);
+			break;
+		case VariableType.Array:
+			storageType = typeof(System.Array);
+			break;
+		#endif
 		}
 		
 		bool ok = true;
@@ -289,9 +357,13 @@ public partial class PlayMakerUtils {
 			if (storageType.Equals(typeof(Object))) // we are ok
 			{
 				ok = true;
-				
 			}
-			
+			#if PLAYMAKER_1_8
+			if (storageType.Equals(typeof(System.Enum))) // we are ok
+			{
+				ok = true;
+			}
+			#endif
 			if (!ok)
 			{
 				#if UNITY_WEBGL
@@ -407,7 +479,12 @@ public partial class PlayMakerUtils {
 		}else if(valueType == typeof(Vector3) ){
 			FsmVector3 _target= fromFsm.Variables.GetFsmVector3(fsmVar.variableName);
 			_target.Value = (Vector3)value;
-			
+
+		#if PLAYMAKER_1_8
+		}else if(valueType.BaseType == typeof(System.Enum) ){
+			FsmEnum _target= fromFsm.Variables.GetFsmEnum(fsmVar.variableName);
+			_target.Value = (System.Enum)value;
+		#endif
 		}else{
 			Debug.LogWarning("?!?!"+valueType);
 			//  don't know, should I put in FsmObject?	
