@@ -100,8 +100,7 @@ namespace HutongGames.PlayMaker.Ecosystem.Utils
 			}
 			return list.ToArray();
 		}
-	
-
+		
 		/// <summary>
 		/// Gets the global events list. 
 		/// </summary>
