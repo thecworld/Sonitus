@@ -29,3 +29,4 @@ sysinfo.txt
 *.apk
 *.unitypackage
 Assets/Editor/CrossPlatformInput/CrossPlatformInputInitialize.cs.meta
+Assets/8X8.png
